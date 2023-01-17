@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My dapp</title>
+    <script
+        src="https://cdn.ethers.io/lib/ethers-5.2.umd.min.js"
+        type="application/javascript"
+    ></script>
+
+
+    <style>
+        body {
+          text-align: center;
+          font-family: Arial, Helvetica, sans-serif;
+        }
+      
+        div {
+          width: 20%;
+          margin: 0 auto;
+          display: flex;
+          flex-direction: column;
+        }
+      
+        button {
+          width: 100%;
+          margin: 10px 0px 5px 0px;
+        }
+      </style>
+</head>
+<body>
+    
+    <div>
+        <h1>My dapp</h1>
+        <p>ERC20 token dapp</p>
+        <label for="number"> Mint tokens </label>
+        </br>
+        <input type ="number" min=0 id="mintToken">
+        <button onclick = "mint()">Mint</button>
+        </br>
+        <p>===========================</p>
+        <input type ="text" id="addressToTransfer">
+        <input type ="number" min=0 id="amountToTransfer">
+        <button onclick = "transfer()">Transfer</button>
+        </br>
+        <p>Check your balance</p>
+        <button onclick = "balanceOf()">BalanceOf</button>
+        <p>Your balance is: <span id ="balanceOf"></p>
+        
+    </div>
+
+    <script>
+        //Cntl+Shift+L
+        const ERC20Contract = "0x8Ae239895BeBCe406F0ec3A06d418bF93C28991B";
+        const ERC20ContractABI = [{"inputs":[{"internalType":"uint256","name":"_amount","type":"uint256"}],"stateMutability":"nonpayable","type":"constructor"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"owner","type":"address"},{"indexed":true,"internalType":"address","name":"spender","type":"address"},{"indexed":false,"internalType":"uint256","name":"value","type":"uint256"}],"name":"Approval","type":"event"},{"inputs":[{"internalType":"address","name":"spender","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"approve","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"burn","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"spender","type":"address"},{"internalType":"uint256","name":"subtractedValue","type":"uint256"}],"name":"decreaseAllowance","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"spender","type":"address"},{"internalType":"uint256","name":"addedValue","type":"uint256"}],"name":"increaseAllowance","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"mint","outputs":[],"stateMutability":"nonpayable","type":"function"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"previousOwner","type":"address"},{"indexed":true,"internalType":"address","name":"newOwner","type":"address"}],"name":"OwnershipTransferred","type":"event"},{"inputs":[],"name":"renounceOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"transfer","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"from","type":"address"},{"indexed":true,"internalType":"address","name":"to","type":"address"},{"indexed":false,"internalType":"uint256","name":"value","type":"uint256"}],"name":"Transfer","type":"event"},{"inputs":[{"internalType":"address","name":"from","type":"address"},{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"transferFrom","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"newOwner","type":"address"}],"name":"transferOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"owner","type":"address"},{"internalType":"address","name":"spender","type":"address"}],"name":"allowance","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"account","type":"address"}],"name":"balanceOf","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"decimals","outputs":[{"internalType":"uint8","name":"","type":"uint8"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"name","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"owner","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"symbol","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"totalSupply","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"}]
+        
+        let Contract;
+        let signer;
+        
+        //Provider = RPC Node in a blockchain
+        const provider = new ethers.providers.Web3Provider(window.ethereum, 97);
+        // provider = https://indulgent-newest-leaf.bsc-testnet.discover.quiknode.pro/8a8483b20d028a2b4ca603f1f86a6f1d702a6624/
+        provider.send("eth_requestAccounts", []).then(() => {//request accounts
+            provider.listAccounts().then((accounts) => {//have access to list of accounts
+                signer = provider.getSigner(accounts[0]);//access your connected account
+                Contract = new ethers.Contract(
+                    ERC20Contract,
+                    ERC20ContractABI,
+                    signer
+                );//Create JS object of smart-contract existing on blockchain
+            });
+        });
+        async function mint(){
+            const number = document.getElementById("mintToken").value
+            const store = Contract.mint(number)
+            await store;
+        }
+        async function transfer(){
+            const addressToTransfer = document.getElementById("addressToTransfer").value
+            let amountToTransfer = document.getElementById("amountToTransfer").value
+            //console.log(amountToTransfer);
+            const transfer = Contract.transfer(addressToTransfer, amountToTransfer)
+            await transfer;
+        }
+        async function balanceOf(){
+            let balance  = BigInt(await Contract.balanceOf(await signer.getAddress()));
+            const balanceOf = document.getElementById("balanceOf");
+            balanceOf.innerText = balance;
+
+            console.log(balance)
+        }
+        
+        //Improve interface, more user Friendly
+
+    </script>
+
+</body>
+</html>
